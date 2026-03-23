@@ -1,0 +1,35 @@
+<div class="sticky-controls" id="stickyControls">
+    <div class="controls">
+        <button class="currency-btn active" data-currency="USD">USD</button>
+        <button class="currency-btn" data-currency="CLP">CLP</button>
+        <div class="separator-bar"></div>
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="es">ES</button>
+    </div>
+    <div class="date-controls">
+        <input type="date" id="dateFrom" aria-label="From date">
+        <span class="separator">to</span>
+        <input type="date" id="dateTo" aria-label="To date">
+        <div class="presets">
+            <button class="preset-btn" data-years="1">1Y</button>
+            <button class="preset-btn" data-years="5">5Y</button>
+            <button class="preset-btn" data-years="10">10Y</button>
+            <button class="preset-btn" data-years="20">20Y</button>
+            <button class="preset-btn active" data-years="0">All</button>
+        </div>
+    </div>
+</div>
+<div class="chart-container">
+    <canvas id="balanceChart"></canvas>
+</div>
+<div class="chart-stack">
+    <div class="chart-container">
+        <canvas id="assetBreakdownChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="liabilityBreakdownChart"></canvas>
+    </div>
+</div>
+<div class="chart-container">
+    <canvas id="ratioChart"></canvas>
+</div>
