@@ -66,13 +66,19 @@ function t(key) { return I18N[currentLang][key] || key; }
 function numLocale() { return currentLang === 'es' ? 'es-CL' : 'en-US'; }
 
 var PRESIDENTS = [
-    {name: 'Lagos', start: '2000-03-11', end: '2006-03-11', color: 'rgba(239, 68, 68, 0.07)'},
-    {name: 'Bachelet I', start: '2006-03-11', end: '2010-03-11', color: 'rgba(234, 179, 8, 0.07)'},
-    {name: 'Piñera I', start: '2010-03-11', end: '2014-03-11', color: 'rgba(59, 130, 246, 0.07)'},
-    {name: 'Bachelet II', start: '2014-03-11', end: '2018-03-11', color: 'rgba(234, 179, 8, 0.07)'},
-    {name: 'Piñera II', start: '2018-03-11', end: '2022-03-11', color: 'rgba(59, 130, 246, 0.07)'},
-    {name: 'Boric', start: '2022-03-11', end: '2026-03-11', color: 'rgba(239, 68, 68, 0.07)'},
-    {name: 'Kast', start: '2026-03-11', end: '2030-03-11', color: 'rgba(59, 130, 246, 0.07)'},
+    {name: 'Alessandri',      start: '1958-11-03', end: '1964-11-03', color: 'rgba(59, 130, 246, 0.07)'},
+    {name: 'Frei Montalva',   start: '1964-11-03', end: '1970-11-03', color: 'rgba(234, 179, 8, 0.07)'},
+    {name: 'Allende',         start: '1970-11-03', end: '1973-09-11', color: 'rgba(239, 68, 68, 0.07)'},
+    {name: 'Pinochet',        start: '1973-09-11', end: '1990-03-11', color: 'rgba(107, 114, 128, 0.07)'},
+    {name: 'Aylwin',          start: '1990-03-11', end: '1994-03-11', color: 'rgba(234, 179, 8, 0.07)'},
+    {name: 'Frei Ruiz-Tagle', start: '1994-03-11', end: '2000-03-11', color: 'rgba(234, 179, 8, 0.07)'},
+    {name: 'Lagos',           start: '2000-03-11', end: '2006-03-11', color: 'rgba(239, 68, 68, 0.07)'},
+    {name: 'Bachelet I',      start: '2006-03-11', end: '2010-03-11', color: 'rgba(234, 179, 8, 0.07)'},
+    {name: 'Piñera I',        start: '2010-03-11', end: '2014-03-11', color: 'rgba(59, 130, 246, 0.07)'},
+    {name: 'Bachelet II',     start: '2014-03-11', end: '2018-03-11', color: 'rgba(234, 179, 8, 0.07)'},
+    {name: 'Piñera II',       start: '2018-03-11', end: '2022-03-11', color: 'rgba(59, 130, 246, 0.07)'},
+    {name: 'Boric',           start: '2022-03-11', end: '2026-03-11', color: 'rgba(239, 68, 68, 0.07)'},
+    {name: 'Kast',            start: '2026-03-11', end: '2030-03-11', color: 'rgba(59, 130, 246, 0.07)'},
 ];
 
 var BREAKDOWN_COLORS = {
