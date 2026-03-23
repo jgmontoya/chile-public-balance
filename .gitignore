@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# Test
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# Secrets
+.env
+
+# Downloaded source files (large, not tracked)
+data/raw/
+
+# Generated site (rebuild with: python -m chile_balance build)
+site/
