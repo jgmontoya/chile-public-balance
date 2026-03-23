@@ -66,7 +66,8 @@ BANCO_CENTRAL_SERIES = [
     _f038("F038.400.STO.20.10.N.2018.CLP.T", "asset", "general_government", "breakdown.loans"),
     _f038("F038.700.STO.20.10.N.2018.CLP.T", "asset", "general_government", "breakdown.other"),
     # Govt liabilities by instrument type
-    _f038("F038.300.STO.10.20.N.2018.CLP.T", "liability", "general_government", "breakdown.bonds"),
+    _f038("F038.310.STO.10.20.N.2018.CLP.T", "liability", "general_government", "breakdown.bonds_short"),
+    _f038("F038.320.STO.10.20.N.2018.CLP.T", "liability", "general_government", "breakdown.bonds_long"),
     _f038("F038.400.STO.10.20.N.2018.CLP.T", "liability", "general_government", "breakdown.loans"),
     _f038("F038.700.STO.10.20.N.2018.CLP.T", "liability", "general_government", "breakdown.other"),
 
@@ -82,4 +83,23 @@ BANCO_CENTRAL_SERIES = [
         "F038.CNF.PPB2.20.10.N.2018.CLP.T", "asset", "general_government",
         "ratio.fiscal_balance_pct_gdp", scale=_DROP,
     ),
+    _f038(
+        "F038.DEUD.PPB2.10.20.N.2018.CLP.T", "liability", "general_government",
+        "ratio.govt_debt_pct_gdp", scale=_DROP,
+    ),
+
+    # ═══════════════════════════════════════════════════════════════════
+    # CONTEXT (not balance sheet items, but important for interpretation)
+    # ═══════════════════════════════════════════════════════════════════
+
+    # Copper price (monthly, USD/lb, from 1960)
+    {
+        "series_id": "F019.PPB.PRE.40.M",
+        "side": "asset",
+        "sector": "economy",
+        "category": "context.copper_price_usd_lb",
+        "currency": "USD",
+        "certainty": "reported",
+        "source": "banco_central",
+    },
 ]

@@ -20,8 +20,14 @@ var I18N = {
         cash_deposits: 'Cash & Deposits',
         securities: 'Securities',
         loans: 'Loans',
-        bonds: 'Bonds',
+        bonds_short: 'Bonds (short-term)',
+        bonds_long: 'Bonds (long-term)',
         other: 'Other',
+        govtDebt: 'Government Debt (% GDP)',
+        copperTitle: 'Copper Price',
+        copperPrice: 'Copper',
+        usdPerLb: 'USD/lb',
+        clpPerLb: 'CLP/lb',
     },
     es: {
         pageTitle: 'Balance Público de Chile',
@@ -44,8 +50,14 @@ var I18N = {
         cash_deposits: 'Efectivo y depósitos',
         securities: 'Títulos de deuda',
         loans: 'Préstamos',
-        bonds: 'Bonos',
+        bonds_short: 'Bonos (corto plazo)',
+        bonds_long: 'Bonos (largo plazo)',
         other: 'Otros',
+        govtDebt: 'Deuda del Gobierno (% PIB)',
+        copperTitle: 'Precio del Cobre',
+        copperPrice: 'Cobre',
+        usdPerLb: 'USD/lb',
+        clpPerLb: 'CLP/lb',
     },
 };
 
@@ -68,7 +80,8 @@ var BREAKDOWN_COLORS = {
     cash_deposits: {border: '#0891b2', bg: 'rgba(8, 145, 178, 0.6)'},
     securities:    {border: '#2563eb', bg: 'rgba(37, 99, 235, 0.6)'},
     loans:         {border: '#059669', bg: 'rgba(5, 150, 105, 0.6)'},
-    bonds:         {border: '#dc2626', bg: 'rgba(220, 38, 38, 0.6)'},
+    bonds_short:   {border: '#f59e0b', bg: 'rgba(245, 158, 11, 0.6)'},
+    bonds_long:    {border: '#dc2626', bg: 'rgba(220, 38, 38, 0.6)'},
     other:         {border: '#9ca3af', bg: 'rgba(156, 163, 175, 0.6)'},
 };
 
@@ -91,6 +104,10 @@ if (DATA.balance.labels.length > 0) {
     function formatLabel(currency) {
         if (currency === 'USD') return t('usdMillions');
         return t('clpMillions');
+    }
+
+    function copperUnit(currency) {
+        return currency === 'USD' ? t('usdPerLb') : t('clpPerLb');
     }
 
     function getFilteredIndices(labels) {
@@ -279,6 +296,7 @@ if (DATA.balance.labels.length > 0) {
         var ratioSeries = [
             {key: 'net_financial_assets_pct_gdp', i18nKey: 'netFinancialAssets', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.1)'},
             {key: 'fiscal_balance_pct_gdp', i18nKey: 'fiscalBalance', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)'},
+            {key: 'govt_debt_pct_gdp', i18nKey: 'govtDebt', color: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)'},
         ];
 
         var rtAnn = buildAnnotations(RT.labels);
@@ -298,6 +316,41 @@ if (DATA.balance.labels.length > 0) {
                 scales: {x: {title: {display: true, text: t('date')}}, y: {title: {display: true, text: t('pctGdp')}}},
             },
         });
+    }
+
+    // ── Copper price chart ─────────────────────────────────────────
+    var CX = DATA.context;
+    var copperChart = null;
+
+    if (CX.labels && CX.labels.length > 0 && CX.USD && CX.USD.copper_price_usd_lb) {
+        copperChart = new Chart(document.getElementById('copperChart'), {
+            type: 'line',
+            data: {
+                labels: CX.labels,
+                datasets: [{
+                    label: t('copperPrice'),
+                    data: CX[currentCurrency].copper_price_usd_lb,
+                    borderColor: '#b45309',
+                    backgroundColor: 'rgba(180, 83, 9, 0.1)',
+                    fill: true, tension: 0.3, pointRadius: 0,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {display: true, text: t('copperTitle') + ' (' + copperUnit(currentCurrency) + ')'},
+                    legend: {display: false},
+                    annotation: {annotations: buildAnnotations(CX.labels)},
+                },
+                scales: {
+                    x: {title: {display: true, text: t('date')}},
+                    y: {title: {display: true, text: copperUnit(currentCurrency)}, ticks: {callback: tickCb}},
+                },
+            },
+        });
+    } else {
+        var cc = document.getElementById('copperChartContainer');
+        if (cc) cc.style.display = 'none';
     }
 
     // ── Global update ──────────────────────────────────────────────
@@ -343,6 +396,26 @@ if (DATA.balance.labels.length > 0) {
             ratioChart.options.plugins.annotation.annotations = rAnn;
             ratioChart.update();
         }
+
+        // Copper chart
+        if (copperChart && CX.labels.length > 0) {
+            var cr = getFilteredIndices(CX.labels);
+            var cl = CX.labels.slice(cr[0], cr[1]);
+            copperChart.data = {
+                labels: cl,
+                datasets: [{
+                    label: t('copperPrice'), data: CX[currentCurrency].copper_price_usd_lb.slice(cr[0], cr[1]),
+                    borderColor: '#b45309', backgroundColor: 'rgba(180, 83, 9, 0.1)',
+                    fill: true, tension: 0.3, pointRadius: 0,
+                }],
+            };
+            copperChart.options.plugins.title.text = t('copperTitle') + ' (' + copperUnit(currentCurrency) + ')';
+            copperChart.options.scales.y.title.text = copperUnit(currentCurrency);
+            copperChart.options.plugins.annotation.annotations = buildAnnotations(cl);
+            copperChart.update();
+        }
+
+        renderDataTable();
     }
 
     document.querySelectorAll('.currency-btn').forEach(function(btn) {
@@ -456,8 +529,98 @@ if (DATA.balance.labels.length > 0) {
                 ratioChart.options.plugins.annotation.annotations = rAnn;
                 ratioChart.update();
             }
+
+            if (copperChart) {
+                copperChart.options.plugins.title.text = t('copperTitle') + ' (' + copperUnit(currentCurrency) + ')';
+                copperChart.options.scales.x.title.text = t('date');
+                copperChart.options.scales.y.title.text = copperUnit(currentCurrency);
+                copperChart.data.datasets[0].label = t('copperPrice');
+                copperChart.update();
+            }
+
+            renderDataTable();
         });
     });
+
+    // ── Dark mode ───────────────────────────────────────────────────
+    function getChartColors() {
+        var style = getComputedStyle(document.documentElement);
+        return {
+            grid: style.getPropertyValue('--chart-grid').trim(),
+            text: style.getPropertyValue('--chart-text').trim(),
+        };
+    }
+
+    function applyThemeToChart(ch) {
+        var c = getChartColors();
+        if (!ch) return;
+        var scales = ch.options.scales;
+        Object.keys(scales).forEach(function(axis) {
+            if (scales[axis].ticks) scales[axis].ticks.color = c.text;
+            if (scales[axis].title) scales[axis].title.color = c.text;
+            if (scales[axis].grid) scales[axis].grid.color = c.grid;
+            else scales[axis].grid = {color: c.grid};
+        });
+        if (ch.options.plugins.legend) ch.options.plugins.legend.labels = {color: c.text};
+        if (ch.options.plugins.title) ch.options.plugins.title.color = c.text;
+    }
+
+    function applyThemeToAllCharts() {
+        [balanceChart, assetBDChart, liabilityBDChart, ratioChart, copperChart].forEach(applyThemeToChart);
+        [balanceChart, assetBDChart, liabilityBDChart, ratioChart, copperChart].forEach(function(ch) {
+            if (ch) ch.update();
+        });
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.getElementById('themeIcon').textContent = theme === 'dark' ? '\u2600' : '\u263E';
+        localStorage.setItem('theme', theme);
+        setTimeout(applyThemeToAllCharts, 10);
+    }
+
+    var savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        setTheme(savedTheme);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme('dark');
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', function() {
+        var current = document.documentElement.getAttribute('data-theme');
+        setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    // ── Data table ────────────────────────────────────────────────
+    function renderDataTable() {
+        var range = getFilteredIndices(BAL.labels);
+        var s = range[0], e = range[1];
+        var labels = BAL.labels.slice(s, e);
+        var assets = BAL[currentCurrency].assets.slice(s, e);
+        var liab = BAL[currentCurrency].liabilities.slice(s, e);
+        var net = BAL[currentCurrency].net.slice(s, e);
+
+        var thead = document.getElementById('dataTableHead');
+        var tbody = document.getElementById('dataTableBody');
+
+        thead.innerHTML = '<tr><th>' + t('date') + '</th><th>' + t('assets')
+            + '</th><th>' + t('liabilities') + '</th><th>' + t('netPosition') + '</th></tr>';
+
+        var rows = [];
+        for (var i = labels.length - 1; i >= 0; i--) {
+            var netClass = net[i] >= 0 ? 'positive' : 'negative';
+            rows.push(
+                '<tr><td>' + labels[i]
+                + '</td><td>' + fmtFull(assets[i])
+                + '</td><td>' + fmtFull(liab[i])
+                + '</td><td class="' + netClass + '">' + fmtFull(net[i])
+                + '</td></tr>'
+            );
+        }
+        tbody.innerHTML = rows.join('');
+    }
+
+    renderDataTable();
 
     var sticky = document.getElementById('stickyControls');
     window.addEventListener('scroll', function() {

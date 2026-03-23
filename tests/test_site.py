@@ -154,6 +154,8 @@ def test_build_site_produces_html_with_currency_toggle(tmp_path):
     assert "assetBreakdownChart" in html
     assert "liabilityBreakdownChart" in html
     assert "ratioChart" in html
+    assert "data-table" in html
+    assert "theme-btn" in html
 
 
 def test_build_site_with_no_data_shows_empty_state(tmp_path):

@@ -5,6 +5,10 @@
         <div class="separator-bar"></div>
         <button class="lang-btn active" data-lang="en">EN</button>
         <button class="lang-btn" data-lang="es">ES</button>
+        <div class="separator-bar"></div>
+        <button class="theme-btn" id="themeToggle" aria-label="Toggle dark mode">
+            <span id="themeIcon">&#9790;</span>
+        </button>
     </div>
     <div class="date-controls">
         <input type="date" id="dateFrom" aria-label="From date">
@@ -32,4 +36,13 @@
 </div>
 <div class="chart-container">
     <canvas id="ratioChart"></canvas>
+</div>
+<div class="chart-container" id="copperChartContainer">
+    <canvas id="copperChart"></canvas>
+</div>
+<div class="data-table-container">
+    <table class="data-table" id="dataTable">
+        <thead id="dataTableHead"></thead>
+        <tbody id="dataTableBody"></tbody>
+    </table>
 </div>

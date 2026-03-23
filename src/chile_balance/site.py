@@ -59,7 +59,7 @@ def prepare_chart_data(
     series: dict[SeriesKey, dict[date, float]] = defaultdict(dict)
 
     for entry in entries:
-        if entry.category.startswith("breakdown.") or entry.category.startswith("ratio."):
+        if entry.category.startswith(("breakdown.", "ratio.", "context.")):
             continue
         key = (entry.side, entry.sector, entry.category, entry.currency)
         series[key][entry.date] = entry.amount
@@ -175,6 +175,44 @@ def prepare_ratio_data(entries: list[Entry]) -> dict[str, Any]:
     return result
 
 
+def prepare_context_data(
+    entries: list[Entry],
+    rates: list[ExchangeRate] | None = None,
+) -> dict[str, Any]:
+    rate_lookup = _build_rate_lookup(rates) if rates else {}
+    context_entries = [e for e in entries if e.category.startswith("context.")]
+
+    # Track currency per series
+    series: dict[str, dict[date, float]] = defaultdict(dict)
+    currencies: dict[str, str] = {}
+    for entry in context_entries:
+        label = entry.category.removeprefix("context.")
+        series[label][entry.date] = entry.amount
+        currencies[label] = entry.currency
+
+    all_dates: set[date] = set()
+    for points in series.values():
+        all_dates.update(points.keys())
+    timeline = sorted(all_dates)
+
+    def build_for_currency(target: str) -> dict[str, list[float]]:
+        result = {}
+        for label, sparse in sorted(series.items()):
+            filled = _forward_fill(sparse, timeline)
+            converted = []
+            for i, d in enumerate(timeline):
+                rate = rate_lookup.get(d.strftime("%Y-%m"))
+                converted.append(round(_convert_amount(filled[i], currencies[label], target, rate), 4))
+            result[label] = converted
+        return result
+
+    return {
+        "labels": [d.isoformat() for d in timeline],
+        "USD": build_for_currency("USD"),
+        "CLP": build_for_currency("CLP"),
+    }
+
+
 def build_site(data_path: Path, rates_path: Path, output_path: Path) -> None:
     from datetime import datetime
 
@@ -183,6 +221,7 @@ def build_site(data_path: Path, rates_path: Path, output_path: Path) -> None:
     chart_data = prepare_chart_data(entries, rates)
     breakdown_data = prepare_breakdown_data(entries, rates)
     ratio_data = prepare_ratio_data(entries)
+    context_data = prepare_context_data(entries, rates)
 
     has_data = len(chart_data["labels"]) > 0
 
@@ -193,6 +232,7 @@ def build_site(data_path: Path, rates_path: Path, output_path: Path) -> None:
         "balance": chart_data,
         "breakdown": breakdown_data,
         "ratios": ratio_data,
+        "context": context_data,
     })
 
     html = _read_template("page.html")
