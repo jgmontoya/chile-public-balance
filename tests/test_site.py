@@ -129,6 +129,26 @@ def test_prepare_ratio_data_extracts_ratio_series():
     assert result["fiscal_balance_pct_gdp"] == [-2.1, -1.8]
 
 
+def test_prepare_context_data_returns_multiple_series():
+    from chile_balance.site import prepare_context_data
+
+    entries = [
+        _entry(date(2024, 1, 1), "asset", 4.5, category="context.copper_price_usd_lb"),
+        _entry(date(2024, 1, 1), "asset", 5000.0, category="context.fees_usd"),
+        _entry(date(2024, 1, 1), "asset", 8000.0, category="context.frp_usd"),
+        _entry(date(2024, 6, 1), "asset", 4.8, category="context.copper_price_usd_lb"),
+        _entry(date(2024, 6, 1), "asset", 5500.0, category="context.fees_usd"),
+        _entry(date(2024, 6, 1), "asset", 8200.0, category="context.frp_usd"),
+    ]
+
+    result = prepare_context_data(entries)
+
+    assert result["labels"] == ["2024-01-01", "2024-06-01"]
+    assert result["USD"]["copper_price_usd_lb"] == [4.5, 4.8]
+    assert result["USD"]["fees_usd"] == [5000.0, 5500.0]
+    assert result["USD"]["frp_usd"] == [8000.0, 8200.0]
+
+
 def test_build_site_produces_html_with_currency_toggle(tmp_path):
     csv_file = tmp_path / "balance.csv"
     rates_file = tmp_path / "rates.csv"
@@ -156,6 +176,23 @@ def test_build_site_produces_html_with_currency_toggle(tmp_path):
     assert "ratioChart" in html
     assert "data-table" in html
     assert "theme-btn" in html
+
+
+def test_build_site_includes_sovereign_fund_chart(tmp_path):
+    csv_file = tmp_path / "balance.csv"
+    rates_file = tmp_path / "rates.csv"
+    entries = [
+        _entry(date(2024, 1, 1), "asset", 1000.0),
+        _entry(date(2024, 1, 1), "liability", 500.0),
+    ]
+    write_entries(csv_file, entries)
+    write_rates(rates_file, [ExchangeRate(date=date(2024, 1, 15), usd_to_clp=900.0)])
+
+    output = tmp_path / "index.html"
+    build_site(csv_file, rates_file, output)
+
+    html = output.read_text()
+    assert "sovereignFundChart" in html
 
 
 def test_build_site_with_no_data_shows_empty_state(tmp_path):

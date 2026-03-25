@@ -102,4 +102,26 @@ BANCO_CENTRAL_SERIES = [
         "certainty": "reported",
         "source": "banco_central",
     },
+    # FEES balance (monthly, USD millions, from 2010)
+    # INCLUDED in gobierno general totals — shown separately for context only.
+    {
+        "series_id": "F051.C17.STO.C.Z.USD.M",
+        "side": "asset",
+        "sector": "general_government",
+        "category": "context.fees_usd",
+        "currency": "USD",
+        "certainty": "reported",
+        "source": "banco_central",
+    },
+    # FRP balance (monthly, USD millions, from 2010)
+    # INCLUDED in gobierno general totals — shown separately for context only.
+    {
+        "series_id": "F051.C15.STO.C.Z.USD.M",
+        "side": "asset",
+        "sector": "general_government",
+        "category": "context.frp_usd",
+        "currency": "USD",
+        "certainty": "reported",
+        "source": "banco_central",
+    },
 ]

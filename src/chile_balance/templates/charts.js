@@ -24,10 +24,31 @@ var I18N = {
         bonds_long: 'Bonds (long-term)',
         other: 'Other',
         govtDebt: 'Government Debt (% GDP)',
+        contingentLiabilities: 'Contingent Liabilities (% GDP)',
         copperTitle: 'Copper Price',
         copperPrice: 'Copper',
         usdPerLb: 'USD/lb',
         clpPerLb: 'CLP/lb',
+        evtCopper: 'Copper nationalized',
+        evtCoup: 'Coup',
+        evtBanking: 'Banking crisis',
+        evtDemocracy: 'Democracy',
+        evtSupercycle: 'Supercycle',
+        evtFunds: 'FEES/FRP',
+        evtGFC: 'GFC 2008',
+        evtEarthquake: 'Earthquake 8.8',
+        evtEstallido: 'Estallido',
+        evtCovid: 'COVID-19',
+        evtReferendum: 'Plebiscito',
+        infoBalance: 'Total financial assets and liabilities of the General Government and Central Bank. Quarterly, from national accounts by institutional sector (F038). Source: Banco Central de Chile.',
+        infoAssets: 'Government general financial assets by instrument type: equity in state-owned enterprises, cash and deposits, securities, loans, and other accounts. Source: Banco Central de Chile (F038).',
+        infoLiabilities: 'Government general liabilities by maturity and type: long-term bonds, short-term bonds, loans, and other. Source: Banco Central de Chile (F038).',
+        infoRatios: 'Net financial assets, fiscal balance, government debt, and contingent liabilities as percentage of GDP. Quarterly ratios from Banco Central (F038). Contingent liabilities from annual DIPRES reports (2007-2025).',
+        infoCopper: 'Monthly copper price (BML London). Chile is the world\'s largest copper producer and fiscal revenues are highly correlated with the copper price. Source: Banco Central de Chile.',
+        sovereignFundsTitle: 'Sovereign Funds',
+        fees: 'FEES',
+        frp: 'FRP',
+        infoSovereignFunds: 'FEES (Economic and Social Stabilization Fund) and FRP (Pension Reserve Fund), created in 2006 under the Fiscal Responsibility Law. These funds are included in government general assets. Source: Banco Central de Chile (F051).',
     },
     es: {
         pageTitle: 'Balance Público de Chile',
@@ -54,16 +75,51 @@ var I18N = {
         bonds_long: 'Bonos (largo plazo)',
         other: 'Otros',
         govtDebt: 'Deuda del Gobierno (% PIB)',
+        contingentLiabilities: 'Pasivos Contingentes (% PIB)',
         copperTitle: 'Precio del Cobre',
         copperPrice: 'Cobre',
         usdPerLb: 'USD/lb',
         clpPerLb: 'CLP/lb',
+        evtCopper: 'Nacionalizacion',
+        evtCoup: 'Golpe',
+        evtBanking: 'Crisis bancaria',
+        evtDemocracy: 'Democracia',
+        evtSupercycle: 'Superciclo',
+        evtFunds: 'FEES/FRP',
+        evtGFC: 'Crisis 2008',
+        evtEarthquake: 'Terremoto 8.8',
+        evtEstallido: 'Estallido',
+        evtCovid: 'COVID-19',
+        evtReferendum: 'Plebiscito',
+        infoBalance: 'Activos y pasivos financieros totales del Gobierno General y Banco Central. Trimestral, de cuentas nacionales por sector institucional (F038). Fuente: Banco Central de Chile.',
+        infoAssets: 'Activos financieros del gobierno general por tipo de instrumento: participaciones en empresas estatales, efectivo y depositos, titulos, prestamos y otras cuentas. Fuente: Banco Central de Chile (F038).',
+        infoLiabilities: 'Pasivos del gobierno general por plazo y tipo: bonos de largo plazo, bonos de corto plazo, prestamos y otros. Fuente: Banco Central de Chile (F038).',
+        infoRatios: 'Activos financieros netos, balance fiscal, deuda del gobierno y pasivos contingentes como porcentaje del PIB. Ratios trimestrales del Banco Central (F038). Pasivos contingentes de informes anuales de DIPRES (2007-2025).',
+        infoCopper: 'Precio mensual del cobre (BML Londres). Chile es el mayor productor de cobre del mundo y los ingresos fiscales estan altamente correlacionados con el precio del cobre. Fuente: Banco Central de Chile.',
+        sovereignFundsTitle: 'Fondos Soberanos',
+        fees: 'FEES',
+        frp: 'FRP',
+        infoSovereignFunds: 'FEES (Fondo de Estabilizacion Economica y Social) y FRP (Fondo de Reserva de Pensiones), creados en 2006 bajo la Ley de Responsabilidad Fiscal. Estos fondos estan incluidos en los activos del gobierno general. Fuente: Banco Central de Chile (F051).',
     },
 };
 
 var currentLang = (window.location.hash === '#es') ? 'es' : 'en';
 function t(key) { return I18N[currentLang][key] || key; }
 function numLocale() { return currentLang === 'es' ? 'es-CL' : 'en-US'; }
+
+var EVENTS = [
+    {date: '1971-07-11', i18n: 'evtCopper'},
+    {date: '1973-09-11', i18n: 'evtCoup'},
+    {date: '1982-06-01', i18n: 'evtBanking'},
+    {date: '1990-03-11', i18n: 'evtDemocracy'},
+    {date: '2003-01-01', i18n: 'evtSupercycle'},
+    {date: '2006-03-01', i18n: 'evtFunds'},
+    {date: '2008-09-15', i18n: 'evtGFC'},
+    {date: '2010-02-27', i18n: 'evtEarthquake'},
+    {date: '2019-10-18', i18n: 'evtEstallido'},
+    {date: '2020-03-15', i18n: 'evtCovid'},
+    {date: '2022-09-04', i18n: 'evtReferendum'},
+];
 
 var PRESIDENTS = [
     {name: 'Alessandri',      start: '1958-11-03', end: '1964-11-03', color: 'rgba(59, 130, 246, 0.07)'},
@@ -198,6 +254,24 @@ if (DATA.balance.labels.length > 0) {
                 borderColor: 'rgba(156, 163, 175, 0.3)', borderWidth: 1, borderDash: [4, 4],
             };
         });
+
+        EVENTS.forEach(function(ev, i) {
+            if (ev.date < firstLabel || ev.date > lastLabel) return;
+            var x = snapToLabel(ev.date, labels);
+            annotations['event' + i] = {
+                type: 'line', xMin: x, xMax: x,
+                drawTime: 'beforeDatasetsDraw',
+                borderColor: 'rgba(220, 38, 38, 0.25)', borderWidth: 1, borderDash: [2, 3],
+                label: {
+                    display: true, content: t(ev.i18n),
+                    drawTime: 'beforeDatasetsDraw',
+                    position: 'start', backgroundColor: 'rgba(220, 38, 38, 0.04)',
+                    color: 'rgba(220, 38, 38, 0.5)', font: {size: 8}, padding: {x: 3, y: 2},
+                    rotation: -45, yAdjust: -15,
+                },
+            };
+        });
+
         return annotations;
     }
 
@@ -303,6 +377,7 @@ if (DATA.balance.labels.length > 0) {
             {key: 'net_financial_assets_pct_gdp', i18nKey: 'netFinancialAssets', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.1)'},
             {key: 'fiscal_balance_pct_gdp', i18nKey: 'fiscalBalance', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)'},
             {key: 'govt_debt_pct_gdp', i18nKey: 'govtDebt', color: '#dc2626', bg: 'rgba(220, 38, 38, 0.1)'},
+            {key: 'contingent_liabilities_pct_gdp', i18nKey: 'contingentLiabilities', color: '#7c3aed', bg: 'rgba(124, 58, 237, 0.1)'},
         ];
 
         var rtAnn = buildAnnotations(RT.labels);
@@ -359,6 +434,48 @@ if (DATA.balance.labels.length > 0) {
         if (cc) cc.style.display = 'none';
     }
 
+    // ── Sovereign fund chart ────────────────────────────────────────
+    var sovereignFundChart = null;
+
+    if (CX.labels && CX.labels.length > 0 && CX.USD && CX.USD.fees_usd) {
+        var sfDatasets = [
+            {key: 'fees_usd', i18nKey: 'fees', color: '#2563eb', bg: 'rgba(37, 99, 235, 0.1)'},
+            {key: 'frp_usd', i18nKey: 'frp', color: '#16a34a', bg: 'rgba(22, 163, 74, 0.1)'},
+        ];
+
+        sovereignFundChart = new Chart(document.getElementById('sovereignFundChart'), {
+            type: 'line',
+            data: {
+                labels: CX.labels,
+                datasets: sfDatasets.filter(function(sf) { return CX[currentCurrency][sf.key]; }).map(function(sf) {
+                    return {
+                        label: t(sf.i18nKey),
+                        data: CX[currentCurrency][sf.key],
+                        borderColor: sf.color,
+                        backgroundColor: sf.bg,
+                        fill: true, tension: 0.3, pointRadius: 0,
+                    };
+                }),
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {display: true, text: t('sovereignFundsTitle') + ' (' + formatLabel(currentCurrency) + ')'},
+                    legend: {position: 'top'},
+                    tooltip: {callbacks: tooltipCb},
+                    annotation: {annotations: buildAnnotations(CX.labels)},
+                },
+                scales: {
+                    x: {title: {display: true, text: t('date')}},
+                    y: {title: {display: true, text: formatLabel(currentCurrency)}, ticks: {callback: tickCb}},
+                },
+            },
+        });
+    } else {
+        var sfc = document.getElementById('sovereignFundChartContainer');
+        if (sfc) sfc.style.display = 'none';
+    }
+
     // ── Global update ──────────────────────────────────────────────
     function updateAllCharts() {
         // Balance chart
@@ -396,7 +513,7 @@ if (DATA.balance.labels.length > 0) {
             ratioChart.data = {
                 labels: rl,
                 datasets: ratioSeries.filter(function(rs) { return RT[rs.key]; }).map(function(rs) {
-                    return {label: rs.label, data: RT[rs.key].slice(rr[0], rr[1]), borderColor: rs.color, backgroundColor: rs.bg, fill: true, tension: 0.3};
+                    return {label: t(rs.i18nKey), data: RT[rs.key].slice(rr[0], rr[1]), borderColor: rs.color, backgroundColor: rs.bg, fill: true, tension: 0.3};
                 }),
             };
             ratioChart.options.plugins.annotation.annotations = rAnn;
@@ -419,6 +536,26 @@ if (DATA.balance.labels.length > 0) {
             copperChart.options.scales.y.title.text = copperUnit(currentCurrency);
             copperChart.options.plugins.annotation.annotations = buildAnnotations(cl);
             copperChart.update();
+        }
+
+        // Sovereign fund chart
+        if (sovereignFundChart && CX.labels.length > 0) {
+            var sr = getFilteredIndices(CX.labels);
+            var sl2 = CX.labels.slice(sr[0], sr[1]);
+            sovereignFundChart.data = {
+                labels: sl2,
+                datasets: sfDatasets.filter(function(sf) { return CX[currentCurrency][sf.key]; }).map(function(sf) {
+                    return {
+                        label: t(sf.i18nKey), data: CX[currentCurrency][sf.key].slice(sr[0], sr[1]),
+                        borderColor: sf.color, backgroundColor: sf.bg,
+                        fill: true, tension: 0.3, pointRadius: 0,
+                    };
+                }),
+            };
+            sovereignFundChart.options.plugins.title.text = t('sovereignFundsTitle') + ' (' + formatLabel(currentCurrency) + ')';
+            sovereignFundChart.options.scales.y.title.text = formatLabel(currentCurrency);
+            sovereignFundChart.options.plugins.annotation.annotations = buildAnnotations(sl2);
+            sovereignFundChart.update();
         }
 
         renderDataTable();
@@ -544,6 +681,16 @@ if (DATA.balance.labels.length > 0) {
                 copperChart.update();
             }
 
+            if (sovereignFundChart) {
+                sovereignFundChart.options.plugins.title.text = t('sovereignFundsTitle') + ' (' + formatLabel(currentCurrency) + ')';
+                sovereignFundChart.options.scales.x.title.text = t('date');
+                sovereignFundChart.options.scales.y.title.text = formatLabel(currentCurrency);
+                sovereignFundChart.data.datasets.forEach(function(ds, i) {
+                    ds.label = t(sfDatasets[i].i18nKey);
+                });
+                sovereignFundChart.update();
+            }
+
             renderDataTable();
         });
     });
@@ -572,8 +719,8 @@ if (DATA.balance.labels.length > 0) {
     }
 
     function applyThemeToAllCharts() {
-        [balanceChart, assetBDChart, liabilityBDChart, ratioChart, copperChart].forEach(applyThemeToChart);
-        [balanceChart, assetBDChart, liabilityBDChart, ratioChart, copperChart].forEach(function(ch) {
+        [balanceChart, assetBDChart, liabilityBDChart, ratioChart, copperChart, sovereignFundChart].forEach(applyThemeToChart);
+        [balanceChart, assetBDChart, liabilityBDChart, ratioChart, copperChart, sovereignFundChart].forEach(function(ch) {
             if (ch) ch.update();
         });
     }

@@ -37,10 +37,13 @@ def _convert_amount(amount: float, currency: str, target: str, rate: float | Non
     return amount
 
 
-def _forward_fill(sparse: dict[date, float], timeline: list[date]) -> list[float]:
-    """Fill gaps in a sparse time series by carrying the last known value forward."""
-    result = []
-    last = 0.0
+def _forward_fill(sparse: dict[date, float], timeline: list[date]) -> list[float | None]:
+    """Fill gaps in a sparse time series by carrying the last known value forward.
+
+    Returns None for dates before the first known value (no backfill).
+    """
+    result: list[float | None] = []
+    last: float | None = None
     for d in timeline:
         if d in sparse:
             last = sparse[d]
@@ -90,8 +93,9 @@ def prepare_chart_data(
             month_key = d.strftime("%Y-%m")
             rate = rate_lookup.get(month_key)
 
-            usd_val = _convert_amount(filled[i], currency, "USD", rate)
-            clp_val = _convert_amount(filled[i], currency, "CLP", rate)
+            val = filled[i] if filled[i] is not None else 0.0
+            usd_val = _convert_amount(val, currency, "USD", rate)
+            clp_val = _convert_amount(val, currency, "CLP", rate)
 
             if side == "asset":
                 usd_assets[i] += usd_val
@@ -136,14 +140,17 @@ def prepare_breakdown_data(
     timeline = sorted(all_dates)
 
     def build_for_currency(target: str) -> dict[str, dict[str, list[float]]]:
-        assets: dict[str, list[float]] = {}
-        liabilities: dict[str, list[float]] = {}
+        assets: dict[str, list] = {}
+        liabilities: dict[str, list] = {}
         for (side, label, currency), sparse in sorted(series.items()):
             filled = _forward_fill(sparse, timeline)
             converted = []
             for i, d in enumerate(timeline):
-                rate = rate_lookup.get(d.strftime("%Y-%m"))
-                converted.append(round(_convert_amount(filled[i], currency, target, rate), 2))
+                if filled[i] is None:
+                    converted.append(None)
+                else:
+                    rate = rate_lookup.get(d.strftime("%Y-%m"))
+                    converted.append(round(_convert_amount(filled[i], currency, target, rate), 2))
             target_dict = assets if side == "asset" else liabilities
             target_dict[label] = converted
         return {"assets": assets, "liabilities": liabilities}
@@ -170,7 +177,7 @@ def prepare_ratio_data(entries: list[Entry]) -> dict[str, Any]:
 
     result: dict[str, Any] = {"labels": [d.isoformat() for d in timeline]}
     for label, sparse in sorted(series.items()):
-        result[label] = [round(v, 2) for v in _forward_fill(sparse, timeline)]
+        result[label] = [round(v, 2) if v is not None else None for v in _forward_fill(sparse, timeline)]
 
     return result
 
@@ -195,14 +202,17 @@ def prepare_context_data(
         all_dates.update(points.keys())
     timeline = sorted(all_dates)
 
-    def build_for_currency(target: str) -> dict[str, list[float]]:
+    def build_for_currency(target: str) -> dict[str, list]:
         result = {}
         for label, sparse in sorted(series.items()):
             filled = _forward_fill(sparse, timeline)
             converted = []
             for i, d in enumerate(timeline):
-                rate = rate_lookup.get(d.strftime("%Y-%m"))
-                converted.append(round(_convert_amount(filled[i], currencies[label], target, rate), 4))
+                if filled[i] is None:
+                    converted.append(None)
+                else:
+                    rate = rate_lookup.get(d.strftime("%Y-%m"))
+                    converted.append(round(_convert_amount(filled[i], currencies[label], target, rate), 4))
             result[label] = converted
         return result
 
@@ -213,10 +223,18 @@ def prepare_context_data(
     }
 
 
+_MANUAL_DATA = Path(__file__).parent.parent.parent / "data" / "manual"
+
+
 def build_site(data_path: Path, rates_path: Path, output_path: Path) -> None:
     from datetime import datetime
 
     entries = read_entries(data_path)
+
+    # Merge manual data sources
+    for csv_file in sorted(_MANUAL_DATA.glob("*.csv")):
+        entries.extend(read_entries(csv_file))
+
     rates = read_rates(rates_path)
     chart_data = prepare_chart_data(entries, rates)
     breakdown_data = prepare_breakdown_data(entries, rates)
