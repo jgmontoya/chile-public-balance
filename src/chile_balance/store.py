@@ -14,13 +14,22 @@ ENTRY_FIELDS = [
 RATE_FIELDS = ["date", "usd_to_clp"]
 
 
+def _entry_key(entry: Entry) -> tuple[date, str, str, str, str]:
+    return (entry.date, entry.side, entry.sector, entry.category, entry.currency)
+
+
 def write_entries(path: Path, entries: list[Entry]) -> None:
-    write_header = not path.exists() or path.stat().st_size == 0
-    with open(path, "a", newline="") as f:
+    merged: dict[tuple[date, str, str, str, str], Entry] = {
+        _entry_key(e): e for e in read_entries(path)
+    }
+    for entry in entries:
+        merged[_entry_key(entry)] = entry
+
+    ordered = sorted(merged.values(), key=_entry_key)
+    with open(path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=ENTRY_FIELDS)
-        if write_header:
-            writer.writeheader()
-        for entry in entries:
+        writer.writeheader()
+        for entry in ordered:
             writer.writerow({
                 "date": entry.date.isoformat(),
                 "side": entry.side,
@@ -58,12 +67,15 @@ def read_entries(path: Path) -> list[Entry]:
 
 
 def write_rates(path: Path, rates: list[ExchangeRate]) -> None:
-    write_header = not path.exists() or path.stat().st_size == 0
-    with open(path, "a", newline="") as f:
+    merged: dict[date, ExchangeRate] = {r.date: r for r in read_rates(path)}
+    for rate in rates:
+        merged[rate.date] = rate
+
+    ordered = sorted(merged.values(), key=lambda r: r.date)
+    with open(path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=RATE_FIELDS)
-        if write_header:
-            writer.writeheader()
-        for rate in rates:
+        writer.writeheader()
+        for rate in ordered:
             writer.writerow({
                 "date": rate.date.isoformat(),
                 "usd_to_clp": rate.usd_to_clp,

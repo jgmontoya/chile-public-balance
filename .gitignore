@@ -25,3 +25,6 @@ data/raw/
 
 # Generated site (rebuild with: python -m chile_balance build)
 site/
+
+# OS
+.DS_Store

@@ -24,20 +24,21 @@ collect --> normalize --> store (CSV) --> build (static HTML)
 
 Every row in the balance sheet follows this schema:
 
-| Field            | Type                   | Example                            |
-| ---------------- | ---------------------- | ---------------------------------- |
-| `date`           | date                   | `2024-03-31`                       |
-| `side`           | `asset` or `liability` | `asset`                            |
-| `sector`         | string                 | `central_bank`, `general_government` |
-| `category`       | dot-path string        | `financial.total`                  |
-| `amount`         | float                  | `100685.12`                        |
-| `currency`       | `CLP`, `USD`, `UF`    | `CLP`                              |
-| `amount_pct_gdp` | float or null          | `15.2`                             |
+| Field            | Type                   | Example                               |
+| ---------------- | ---------------------- | ------------------------------------- |
+| `date`           | date                   | `2024-03-31`                          |
+| `side`           | `asset` or `liability` | `asset`                               |
+| `sector`         | string                 | `central_bank`, `general_government`  |
+| `category`       | dot-path string        | `financial.total`                     |
+| `amount`         | float                  | `100685.12`                           |
+| `currency`       | `CLP`, `USD`, `UF`     | `CLP`                                 |
+| `amount_pct_gdp` | float or null          | `15.2`                                |
 | `certainty`      | string                 | `reported`, `estimated`, `contingent` |
-| `source`         | string                 | `banco_central`                    |
-| `source_date`    | date                   | `2024-04-15`                       |
+| `source`         | string                 | `banco_central`                       |
+| `source_date`    | date                   | `2024-04-15`                          |
 
 Categories use dot-notation prefixes to route data to different charts:
+
 - `financial.total` -- main balance sheet chart
 - `breakdown.*` -- asset/liability composition charts
 - `ratio.*` -- fiscal indicator charts (% of GDP)
