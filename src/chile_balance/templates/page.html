@@ -206,6 +206,51 @@
         .data-table tr:nth-child(even) { background: var(--table-stripe); }
         .data-table .positive { color: #16a34a; }
         .data-table .negative { color: #dc2626; }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem 0.75rem; }
+            h1 { font-size: 1.25rem; }
+            .subtitle { font-size: 0.8125rem; }
+            .subtitle span[style] { display: block; margin-left: 0 !important; margin-top: 0.25rem; }
+            .sticky-controls { padding: 0.5rem 0; }
+            .controls { gap: 0.375rem; }
+            .controls button {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8125rem;
+                min-height: 36px;
+            }
+            .date-controls { width: 100%; gap: 0.375rem; }
+            .date-controls input[type="date"] {
+                flex: 1;
+                min-width: 0;
+                padding: 0.5rem;
+                font-size: 0.875rem;
+                min-height: 36px;
+            }
+            .presets {
+                width: 100%;
+                margin-left: 0;
+                justify-content: space-between;
+                gap: 0.25rem;
+            }
+            .presets button {
+                flex: 1;
+                padding: 0.4375rem 0.25rem;
+                min-height: 32px;
+            }
+            .chart-container { padding: 0.875rem 0.625rem; }
+            .section-title { margin-top: 1.25rem; font-size: 1rem; }
+            .chart-info { font-size: 0.6875rem; margin-top: 1rem; }
+            .data-table { font-size: 0.75rem; }
+            .data-table th { padding: 0.5rem 0.5rem; }
+            .data-table td { padding: 0.4375rem 0.5rem; }
+        }
+
+        @media (max-width: 380px) {
+            .controls { gap: 0.25rem; }
+            .controls .separator-bar { margin: 0; }
+            .controls button { padding: 0.4375rem 0.5rem; font-size: 0.75rem; }
+        }
     </style>
 </head>
 <body>
